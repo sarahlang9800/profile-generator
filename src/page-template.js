@@ -1,6 +1,6 @@
+const Engineer = require('../lib/Engineer');
 const inquirer = require('inquirer');
 const fs = require('fs');
-const Engineer = require('../lib/Engineer');
 let addEmployee;
 const teamMembers = [];
 let starterHTML = `<!DOCTYPE html>
@@ -96,8 +96,7 @@ renderPosition = ({ role, officeNumber, github, school }) => {
   }
 }
 
-function generateHTML(teamMembers) {
-  const team = teamMembers.map((member) => {
+function generateHTML(member) {
     const { name, email, id, role, position } = member;
     return `<div class="bg-danger text-center jumbotron display-4">My Team</div>
   <div class="card bg-primary text-white m-2" style="width: 300px;">
@@ -111,18 +110,16 @@ function generateHTML(teamMembers) {
     </ul>
   </div>
 </div>`;
-  });
-  generateHTML(team);
 };
 
 do {
   inquirer
     .prompt(prompt)
     .then((answers) => {
-      const role = employeeRole(answers.role)
-      const position = renderPosition(answers)
-      const htmlPageContent = generateHTML(answers, role, position);
-      starterHTML += htmlPageContent;
+      teamMembers.map(member => {
+        const htmlPageContent = generateHTML(member)
+        starterHTML += htmlPageContent;
+      })
 
       if (answers.continue === 'Yes!') {
         addEmployee = true;
@@ -134,6 +131,5 @@ do {
           err ? console.log(err) : console.log('Successfully created index.html!')
         );
       }
-      console.info(addEmployee)
     });
 } while (addEmployee)

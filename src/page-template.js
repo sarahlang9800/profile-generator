@@ -1,8 +1,8 @@
-const Engineer = require('../lib/Engineer');
 const inquirer = require('inquirer');
 const fs = require('fs');
-let addEmployee;
 const teamMembers = [];
+
+// Starting and ending dynamic HTML
 let starterHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,11 +11,17 @@ let starterHTML = `<!DOCTYPE html>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
   <title>Document</title>
 </head>
-<body>`
-const endingHTML = `<script src="https://kit.fontawesome.com/23474bb623.js" crossorigin="anonymous"></script>
+<body>
+<div class="bg-danger text-center jumbotron display-4">My Team</div>
+<div class="d-flex flex-wrap">`
+
+const endingHTML = `
+</div>
+<script src="https://kit.fontawesome.com/23474bb623.js" crossorigin="anonymous"></script>
 </body>
 </html>`;
 
+// User prompt questions
 const prompt = [
   {
     type: 'input',
@@ -64,6 +70,7 @@ const prompt = [
   },
 ]
 
+// Employee type/role
 employeeRole = role => {
   switch (role) {
     case 'Manager':
@@ -80,56 +87,53 @@ employeeRole = role => {
   }
 }
 
-renderPosition = ({ role, officeNumber, github, school }) => {
-  switch (role) {
+// offers the user different inputs depending on the role they select.
+renderPosition = (member) => {
+  switch (member.role) {
     case 'Manager':
-      return `<li class="list-group-item text-dark">Office Number: ${officeNumber}</li>`
+      return `<li class="list-group-item text-dark">Office Number: ${member.officeNumber}</li>`
       break;
 
     case 'Engineer':
-      return `<li class="list-group-item text-dark">GitHub: ${github}</li>`
+      return `<li class="list-group-item text-dark"><a href = "https://github.com/">GitHub: ${member.github}</a></li>`
       break;
 
     case 'Intern':
-      return `<li class="list-group-item text-dark">Employee School: ${school}</li>`
+      return `<li class="list-group-item text-dark">Employee School: ${member.school}</li>`
       break;
   }
 }
 
+// HTML mockup for employee cards
 function generateHTML(member) {
-    const { name, email, id, role, position } = member;
-    return `<div class="bg-danger text-center jumbotron display-4">My Team</div>
+  return `
   <div class="card bg-primary text-white m-2" style="width: 300px;">
-  <div class="container">
-    <h1 class="display-4">${name}</h1>
-    ${role}
+    <h1 class="display-4">${member.name}</h1>
+    ${employeeRole(member.role)}
     <ul class="list-group list-group-flush">
-      ${position}
-      <li class="list-group-item text-dark">Email: ${email}</li>
-      <li class="list-group-item text-dark">Employee Id: ${id}</li>
+      ${renderPosition(member)}
+      <li class="list-group-item text-dark">Email: ${member.email}</li>
+      <li class="list-group-item text-dark">Employee Id: ${member.id}</li>
     </ul>
-  </div>
 </div>`;
 };
 
-do {
-  inquirer
-    .prompt(prompt)
-    .then((answers) => {
-      teamMembers.map(member => {
-        const htmlPageContent = generateHTML(member)
-        starterHTML += htmlPageContent;
-      })
+// generates HTML
+function init() {
+  inquirer.prompt(prompt).then((answers) => {
+    teamMembers.push(answers);
+    if (answers.continue === 'Yes!') {
+      init()
+    } else {
+      teamMembers.forEach((member) => {
+        starterHTML += generateHTML(member);
+      });
+      const finalHTML = starterHTML + endingHTML;
+      fs.writeFile('index.html', finalHTML, (err) =>
+        err ? console.log(err) : console.log('Successfully created index.html!')
+      );
+    }
+  });
+}
 
-      if (answers.continue === 'Yes!') {
-        addEmployee = true;
-        teamMembers.push(answers);
-      } else {
-        addEmployee = false;
-        const finalHTML = starterHTML + endingHTML;
-        fs.writeFile('index.html', finalHTML, (err) =>
-          err ? console.log(err) : console.log('Successfully created index.html!')
-        );
-      }
-    });
-} while (addEmployee)
+init()
